@@ -1,0 +1,190 @@
+{
+  "parsing": {
+    "routine_kind": "PROCEDURE",
+    "routine_name": "sp_atualizar_status_contas_inativas",
+    "parameters": [
+      {
+        "direction": "IN",
+        "name": "p_dias",
+        "type": "INT"
+      },
+      {
+        "direction": "OUT",
+        "name": "p_afetadas",
+        "type": "INT"
+      }
+    ],
+    "declare_variables": [],
+    "statements": [
+      {
+        "index": 0,
+        "raw": "BEGIN\n    IF p_dias IS NULL OR p_dias <= 0 THEN\n        RAISE EXCEPTION 'Parametro p_dias deve ser positivo, recebido: %', p_dias;\n        RAISE EXCEPTION 'Parametro p_dias deve ser positivo, recebido: %', p_dias;",
+        "kind": "RAISE"
+      },
+      {
+        "index": 1,
+        "raw": "END IF;\n    END IF;",
+        "kind": "OTHER"
+      },
+      {
+        "index": 2,
+        "raw": "UPDATE contas c\n    SET status = 'INATIVA'\n    WHERE c.status = 'ATIVA'\n      AND NOT EXISTS (\n        SELECT 1\n        FROM transacoes t\n        WHERE (t.conta_origem_id = c.id OR t.conta_destino_id = c.id)\n          AND t.data_transacao >= NOW() - (p_dias || ' days')::INTERVAL\n    );\n    );",
+        "kind": "SELECT",
+        "parse_error": "Invalid expression / Unexpected token. Line 10, Col: 5.\n  stino_id = c.id)\n          AND t.data_transacao >= NOW() - (p_dias || ' days')::INTERVAL\n    );\n    \u001b[4m)\u001b[0m;"
+      },
+      {
+        "index": 3,
+        "raw": "GET DIAGNOSTICS p_afetadas = ROW_COUNT;\n    GET DIAGNOSTICS p_afetadas = ROW_COUNT;",
+        "kind": "GET_DIAGNOSTICS"
+      },
+      {
+        "index": 4,
+        "raw": "INSERT INTO log_auditoria (entidade, acao, detalhes)\n    VALUES (\n        'contas',\n        'INATIVACAO_LOTE',\n        jsonb_build_object('dias', p_dias, 'afetadas', p_afetadas)\n    );\n    );",
+        "kind": "INSERT",
+        "parse_error": "Invalid expression / Unexpected token. Line 7, Col: 5.\n     'INATIVACAO_LOTE',\n        jsonb_build_object('dias', p_dias, 'afetadas', p_afetadas)\n    );\n    \u001b[4m)\u001b[0m;"
+      }
+    ],
+    "token_sample": [
+      {
+        "type": "_TokenType",
+        "value": "CREATE OR REPLACE"
+      },
+      {
+        "type": "_TokenType",
+        "value": "PROCEDURE"
+      },
+      {
+        "type": "_TokenType",
+        "value": "sp_atualizar_status_contas_inativas"
+      },
+      {
+        "type": "_TokenType",
+        "value": "("
+      },
+      {
+        "type": "_TokenType",
+        "value": "IN"
+      },
+      {
+        "type": "_TokenType",
+        "value": "p_dias"
+      },
+      {
+        "type": "_TokenType",
+        "value": "INT"
+      },
+      {
+        "type": "_TokenType",
+        "value": ","
+      },
+      {
+        "type": "_TokenType",
+        "value": "OUT"
+      },
+      {
+        "type": "_TokenType",
+        "value": "p_afetadas"
+      },
+      {
+        "type": "_TokenType",
+        "value": "INT"
+      },
+      {
+        "type": "_TokenType",
+        "value": ")"
+      },
+      {
+        "type": "_TokenType",
+        "value": "LANGUAGE"
+      },
+      {
+        "type": "_TokenType",
+        "value": "plpgsql"
+      },
+      {
+        "type": "_TokenType",
+        "value": "AS"
+      },
+      {
+        "type": "_TokenType",
+        "value": "$$\nBEGIN\n    IF p_dias IS NULL OR p_dias <= 0 THEN\n        RAISE EXCEPTION 'Parametro p_dias deve ser positivo, recebido: %', p_dias;\n    END IF;\n    UPDATE contas c\n    SET status = 'INATIVA'\n    WHERE c.status = 'ATIVA'\n      AND NOT EXISTS (\n        SELECT 1\n        FROM transacoes t\n        WHERE (t.conta_origem_id = c.id OR t.conta_destino_id = c.id)\n          AND t.data_transacao >= NOW() - (p_dias || ' days')::INTERVAL\n    );\n    GET DIAGNOSTICS p_afetadas = ROW_COUNT;\n    INSERT INTO log_auditoria (entidade, acao, detalhes)\n    VALUES (\n        'contas',\n        'INATIVACAO_LOTE',\n        jsonb_build_object('dias', p_dias, 'afetadas', p_afetadas)\n    );\nEND;\n$$"
+      },
+      {
+        "type": "_TokenType",
+        "value": ";"
+      }
+    ],
+    "dialect": "postgres",
+    "parser_libraries": [
+      "sqlglot",
+      "sqlparse"
+    ]
+  },
+  "analysis": {
+    "features": {
+      "has_cursor": false,
+      "has_transaction": true,
+      "has_exception": true,
+      "has_cte": false,
+      "has_recursive_cte": false,
+      "has_jsonb": true,
+      "has_raise": true,
+      "has_return_query": false,
+      "has_out_params": true,
+      "has_in_params": true,
+      "has_nested_call": false,
+      "has_loop": false,
+      "has_case": false,
+      "has_bulk_update": true,
+      "is_function": false,
+      "is_procedure": true
+    },
+    "risks": [
+      {
+        "tag": "raise",
+        "severity": "medium",
+        "message": "Mapear para exceções/logging Python."
+      },
+      {
+        "tag": "jsonb",
+        "severity": "medium",
+        "message": "Usar dict/JSON nativo ou psycopg Json."
+      },
+      {
+        "tag": "exception_block",
+        "severity": "high",
+        "message": "Traduzir try/except com rollback."
+      },
+      {
+        "tag": "row_count",
+        "severity": "low",
+        "message": "Usar cursor.rowcount após DML."
+      },
+      {
+        "tag": "parameters",
+        "severity": "low",
+        "message": "Expor IN/OUT como assinatura + retorno estruturado."
+      }
+    ],
+    "recommendations": [
+      "Usar context manager de transação (psycopg connection.transaction()).",
+      "Retornar OUT parameters como dataclass ou dict nomeado."
+    ],
+    "complexity_score": 12,
+    "sql_delegation_strategy": "sqlalchemy_dml_with_python_validation"
+  },
+  "generation": {},
+  "validation": {
+    "valid": true,
+    "ast_parse_ok": true,
+    "lint_ok": true,
+    "issues": [],
+    "warnings": [],
+    "metrics": {
+      "ast_parse_rate": 1.0,
+      "line_count": 43
+    }
+  },
+  "status": null,
+  "error": null
+}

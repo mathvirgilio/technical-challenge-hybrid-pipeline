@@ -1,0 +1,156 @@
+{
+  "parsing": {
+    "routine_kind": "FUNCTION",
+    "routine_name": "fn_saldo_cliente",
+    "parameters": [
+      {
+        "direction": "IN",
+        "name": "p_cliente_id",
+        "type": "BIGINT"
+      }
+    ],
+    "declare_variables": [],
+    "statements": [
+      {
+        "index": 0,
+        "raw": "SELECT COALESCE(SUM(saldo), 0)\n    INTO v_total\n    FROM contas\n    WHERE cliente_id = p_cliente_id\n      AND status = 'ATIVA';\n      AND status = 'ATIVA';",
+        "kind": "SELECT",
+        "parse_error": "Required keyword: 'this' missing for <class 'sqlglot.expressions.core.And'>. Line 6, Col: 26.\n  \n    FROM contas\n    WHERE cliente_id = p_cliente_id\n      AND status = 'ATIVA';\n      AND status = \u001b[4m'ATIVA'\u001b[0m;"
+      },
+      {
+        "index": 1,
+        "raw": "RETURN v_total;\n    RETURN v_total;",
+        "kind": "RETURN"
+      }
+    ],
+    "token_sample": [
+      {
+        "type": "_TokenType",
+        "value": "CREATE OR REPLACE"
+      },
+      {
+        "type": "_TokenType",
+        "value": "FUNCTION"
+      },
+      {
+        "type": "_TokenType",
+        "value": "fn_saldo_cliente"
+      },
+      {
+        "type": "_TokenType",
+        "value": "("
+      },
+      {
+        "type": "_TokenType",
+        "value": "p_cliente_id"
+      },
+      {
+        "type": "_TokenType",
+        "value": "BIGINT"
+      },
+      {
+        "type": "_TokenType",
+        "value": ")"
+      },
+      {
+        "type": "_TokenType",
+        "value": "RETURNS"
+      },
+      {
+        "type": "_TokenType",
+        "value": "NUMERIC"
+      },
+      {
+        "type": "_TokenType",
+        "value": "("
+      },
+      {
+        "type": "_TokenType",
+        "value": "18"
+      },
+      {
+        "type": "_TokenType",
+        "value": ","
+      },
+      {
+        "type": "_TokenType",
+        "value": "2"
+      },
+      {
+        "type": "_TokenType",
+        "value": ")"
+      },
+      {
+        "type": "_TokenType",
+        "value": "LANGUAGE"
+      },
+      {
+        "type": "_TokenType",
+        "value": "plpgsql"
+      },
+      {
+        "type": "_TokenType",
+        "value": "AS"
+      },
+      {
+        "type": "_TokenType",
+        "value": "$$\nDECLARE\n    v_total NUMERIC(18,2);\nBEGIN\n    SELECT COALESCE(SUM(saldo), 0)\n    INTO v_total\n    FROM contas\n    WHERE cliente_id = p_cliente_id\n      AND status = 'ATIVA';\n    RETURN v_total;\nEND;\n$$"
+      },
+      {
+        "type": "_TokenType",
+        "value": ";"
+      }
+    ],
+    "dialect": "postgres",
+    "parser_libraries": [
+      "sqlglot",
+      "sqlparse"
+    ]
+  },
+  "analysis": {
+    "features": {
+      "has_cursor": false,
+      "has_transaction": true,
+      "has_exception": false,
+      "has_cte": false,
+      "has_recursive_cte": false,
+      "has_jsonb": false,
+      "has_raise": false,
+      "has_return_query": false,
+      "has_out_params": false,
+      "has_in_params": true,
+      "has_nested_call": true,
+      "has_loop": false,
+      "has_case": false,
+      "has_bulk_update": false,
+      "is_function": true,
+      "is_procedure": false
+    },
+    "risks": [
+      {
+        "tag": "nested_function",
+        "severity": "medium",
+        "message": "Inlining ou import do módulo Python equivalente."
+      }
+    ],
+    "recommendations": [
+      "Usar context manager de transação (psycopg connection.transaction())."
+    ],
+    "complexity_score": 4,
+    "sql_delegation_strategy": "python_orchestration_sql_queries"
+  },
+  "generation": {},
+  "validation": {
+    "valid": true,
+    "ast_parse_ok": true,
+    "lint_ok": true,
+    "issues": [],
+    "warnings": [],
+    "metrics": {
+      "ast_parse_rate": 1.0,
+      "line_count": 24
+    }
+  },
+  "status": null,
+  "error": null
+}

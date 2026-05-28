@@ -1,0 +1,244 @@
+{
+  "parsing": {
+    "routine_kind": "PROCEDURE",
+    "routine_name": "sp_processar_lote_taxas",
+    "parameters": [
+      {
+        "direction": "IN",
+        "name": "p_data_referencia",
+        "type": "DATE"
+      }
+    ],
+    "declare_variables": [],
+    "statements": [
+      {
+        "index": 0,
+        "raw": "OPEN cur_transacoes;",
+        "kind": "OPEN"
+      },
+      {
+        "index": 1,
+        "raw": "FETCH cur_transacoes INTO v_id, v_origem, v_tipo, v_valor;\n        FETCH cur_transacoes INTO v_id, v_origem, v_tipo, v_valor;",
+        "kind": "FETCH"
+      },
+      {
+        "index": 2,
+        "raw": "EXIT WHEN NOT FOUND;\n        EXIT WHEN NOT FOUND;",
+        "kind": "OTHER"
+      },
+      {
+        "index": 3,
+        "raw": "SELECT percentual, valor_minimo\n        INTO v_percentual, v_minimo\n        FROM taxas\n        WHERE tipo_operacao = v_tipo\n          AND vigente_de <= p_data_referencia\n          AND (vigente_ate IS NULL OR vigente_ate >= p_data_referencia)\n        ORDER BY vigente_de DESC\n        LIMIT 1;\n        LIMIT 1;",
+        "kind": "SELECT",
+        "parse_error": "Invalid expression / Unexpected token. Line 3, Col: 12.\n          SELECT percentual, valor_minimo\n        INTO v_percentual, v_minimo\n        \u001b[4mFROM\u001b[0m taxas\n        WHERE tipo_operacao = v_tipo\n          AND vigente_de <= p_data_referencia\n          "
+      },
+      {
+        "index": 4,
+        "raw": "CONTINUE;\n            CONTINUE;",
+        "kind": "OTHER"
+      },
+      {
+        "index": 5,
+        "raw": "END IF;\n        END IF;",
+        "kind": "OTHER"
+      },
+      {
+        "index": 6,
+        "raw": "v_taxa := GREATEST(v_valor * v_percentual / 100.0, v_minimo);\n        v_taxa := GREATEST(v_valor * v_percentual / 100.0, v_minimo);",
+        "kind": "OTHER"
+      },
+      {
+        "index": 7,
+        "raw": "CASE v_tipo\n            WHEN 'TRANSFERENCIA' THEN v_taxa := v_taxa;\n            WHEN 'TRANSFERENCIA' THEN v_taxa := v_taxa;",
+        "kind": "CASE"
+      },
+      {
+        "index": 8,
+        "raw": "WHEN 'SAQUE' THEN v_taxa := v_taxa * 1.10;\n            WHEN 'SAQUE' THEN v_taxa := v_taxa * 1.10;",
+        "kind": "OTHER"
+      },
+      {
+        "index": 9,
+        "raw": "ELSE v_taxa := v_taxa * 0.90;\n            ELSE v_taxa := v_taxa * 0.90;",
+        "kind": "OTHER"
+      },
+      {
+        "index": 10,
+        "raw": "END CASE;\n        END CASE;",
+        "kind": "OTHER"
+      },
+      {
+        "index": 11,
+        "raw": "UPDATE contas SET saldo = saldo - v_taxa WHERE id = v_origem;\n            UPDATE contas SET saldo = saldo - v_taxa WHERE id = v_origem;",
+        "kind": "UPDATE",
+        "sqlglot_ast": "UPDATE contas SET saldo = saldo - v_taxa WHERE id = v_origem; UPDATE contas SET saldo = saldo - v_taxa WHERE id = v_origem",
+        "sqlglot_type": "Block"
+      },
+      {
+        "index": 12,
+        "raw": "INSERT INTO transacoes (conta_origem_id, tipo, valor, status)\n            VALUES (v_origem, 'TARIFA', v_taxa, 'EFETIVADA');\n            VALUES (v_origem, 'TARIFA', v_taxa, 'EFETIVADA');",
+        "kind": "INSERT",
+        "sqlglot_ast": "INSERT INTO transacoes (conta_origem_id, tipo, valor, status) VALUES (v_origem, 'TARIFA', v_taxa, 'EFETIVADA'); VALUES (v_origem, 'TARIFA', v_taxa, 'EFETIVADA')",
+        "sqlglot_type": "Block"
+      },
+      {
+        "index": 13,
+        "raw": "INSERT INTO log_auditoria (entidade, entidade_id, acao, detalhes)\n            VALUES (\n                'transacoes', v_id, 'TARIFA_APLICADA',\n                jsonb_build_object(\n                    'transacao_origem', v_id,\n                    'tipo_origem', v_tipo,\n                    'valor_origem', v_valor,\n                    'percentual', v_percentual,\n                    'taxa_aplicada', v_taxa\n                )\n            );\n            );",
+        "kind": "INSERT",
+        "parse_error": "Invalid expression / Unexpected token. Line 12, Col: 13.\n  ercentual,\n                    'taxa_aplicada', v_taxa\n                )\n            );\n            \u001b[4m)\u001b[0m;"
+      },
+      {
+        "index": 14,
+        "raw": "v_total_taxas := v_total_taxas + v_taxa;\n            v_total_taxas := v_total_taxas + v_taxa;",
+        "kind": "OTHER"
+      },
+      {
+        "index": 15,
+        "raw": "v_count := v_count + 1;\n            v_count := v_count + 1;",
+        "kind": "OTHER"
+      },
+      {
+        "index": 16,
+        "raw": "END IF;\n        END IF;",
+        "kind": "OTHER"
+      },
+      {
+        "index": 17,
+        "raw": "END LOOP;",
+        "kind": "OTHER"
+      },
+      {
+        "index": 18,
+        "raw": "CLOSE cur_transacoes;",
+        "kind": "CLOSE"
+      },
+      {
+        "index": 19,
+        "raw": "INSERT INTO log_auditoria (entidade, acao, detalhes)\n    VALUES (\n        'lote_taxas', 'LOTE_PROCESSADO',\n        jsonb_build_object(\n            'data_referencia', p_data_referencia,\n            'transacoes', v_count,\n            'total_taxas', v_total_taxas\n        )\n    );\n    );",
+        "kind": "INSERT",
+        "parse_error": "Invalid expression / Unexpected token. Line 10, Col: 5.\n  a,\n            'transacoes', v_count,\n            'total_taxas', v_total_taxas\n        )\n    );\n    \u001b[4m)\u001b[0m;"
+      }
+    ],
+    "token_sample": [
+      {
+        "type": "_TokenType",
+        "value": "CREATE OR REPLACE"
+      },
+      {
+        "type": "_TokenType",
+        "value": "PROCEDURE"
+      },
+      {
+        "type": "_TokenType",
+        "value": "sp_processar_lote_taxas"
+      },
+      {
+        "type": "_TokenType",
+        "value": "("
+      },
+      {
+        "type": "_TokenType",
+        "value": "IN"
+      },
+      {
+        "type": "_TokenType",
+        "value": "p_data_referencia"
+      },
+      {
+        "type": "_TokenType",
+        "value": "DATE"
+      },
+      {
+        "type": "_TokenType",
+        "value": ")"
+      },
+      {
+        "type": "_TokenType",
+        "value": "LANGUAGE"
+      },
+      {
+        "type": "_TokenType",
+        "value": "plpgsql"
+      },
+      {
+        "type": "_TokenType",
+        "value": "AS"
+      },
+      {
+        "type": "_TokenType",
+        "value": "$$\nDECLARE\n    cur_transacoes CURSOR FOR\n        SELECT id, conta_origem_id, tipo, valor\n        FROM transacoes\n        WHERE DATE(data_transacao) = p_data_referencia\n          AND status = 'EFETIVADA'\n          AND tipo <> 'TARIFA';\n    v_id BIGINT;\n    v_origem BIGINT;\n    v_tipo VARCHAR(20);\n    v_valor NUMERIC(18,2);\n    v_taxa NUMERIC(18,2);\n    v_percentual NUMERIC(7,4);\n    v_minimo NUMERIC(18,2);\n    v_total_taxas NUMERIC(18,2) := 0;\n    v_count INT := 0;\nBEGIN\n    OPEN cur_transacoes;\n    LOOP\n        FETCH cur_transacoes INTO v_id, v_origem, v_tipo, v_valor;\n        EXIT WHEN NOT FOUND;\n        SELECT percentual, valor_minimo\n        INTO v_percentual, v_minimo\n        FROM taxas\n        WHERE tipo_operacao = v_tipo\n          AND vigente_de <= p_data_referencia\n          AND (vigente_ate IS NULL OR vigente_ate >= p_data_referencia)\n        ORDER BY vigente_de DESC\n        LIMIT 1;\n        IF v_percentual IS NULL THEN\n            CONTINUE;\n        END IF;\n        v_taxa := GREATEST(v_valor * v_percentual / 100.0, v_minimo);\n        CASE v_tipo\n            WHEN 'TRANSFERENCIA' THEN v_taxa := v_taxa;\n            WHEN 'SAQUE' THEN v_taxa := v_taxa * 1.10;\n            ELSE v_taxa := v_taxa * 0.90;\n        END CASE;\n        IF v_origem IS NOT NULL THEN\n            UPDATE contas SET saldo = saldo - v_taxa WHERE id = v_origem;\n            INSERT INTO transacoes (conta_origem_id, tipo, valor, status)\n            VALUES (v_origem, 'TARIFA', v_taxa, 'EFETIVADA');\n            INSERT INTO log_auditoria (entidade, entidade_id, acao, detalhes)\n            VALUES (\n                'transacoes', v_id, 'TARIFA_APLICADA',\n                jsonb_build_object(\n                    'transacao_origem', v_id,\n                    'tipo_origem', v_tipo,\n                    'valor_origem', v_valor,\n                    'percentual', v_percentual,\n                    'taxa_aplicada', v_taxa\n                )\n            );\n            v_total_taxas := v_total_taxas + v_taxa;\n            v_count := v_count + 1;\n        END IF;\n    END LOOP;\n    CLOSE cur_transacoes;\n    INSERT INTO log_auditoria (entidade, acao, detalhes)\n    VALUES (\n        'lote_taxas', 'LOTE_PROCESSADO',\n        jsonb_build_object(\n            'data_referencia', p_data_referencia,\n            'transacoes', v_count,\n            'total_taxas', v_total_taxas\n        )\n    );\nEND;\n$$"
+      },
+      {
+        "type": "_TokenType",
+        "value": ";"
+      }
+    ],
+    "dialect": "postgres",
+    "parser_libraries": [
+      "sqlglot",
+      "sqlparse"
+    ]
+  },
+  "analysis": {
+    "features": {
+      "has_cursor": true,
+      "has_transaction": true,
+      "has_exception": false,
+      "has_cte": false,
+      "has_recursive_cte": false,
+      "has_jsonb": true,
+      "has_raise": false,
+      "has_return_query": false,
+      "has_out_params": false,
+      "has_in_params": true,
+      "has_nested_call": false,
+      "has_loop": true,
+      "has_case": true,
+      "has_bulk_update": true,
+      "is_function": false,
+      "is_procedure": true
+    },
+    "risks": [
+      {
+        "tag": "cursor",
+        "severity": "high",
+        "message": "Cursores podem gerar N+1; preferir bulk/set-based."
+      },
+      {
+        "tag": "jsonb",
+        "severity": "medium",
+        "message": "Usar dict/JSON nativo ou psycopg Json."
+      },
+      {
+        "tag": "parameters",
+        "severity": "low",
+        "message": "Expor IN/OUT como assinatura + retorno estruturado."
+      },
+      {
+        "tag": "loop",
+        "severity": "low",
+        "message": "Verificar equivalência semântica em iterações."
+      }
+    ],
+    "recommendations": [
+      "Preferir carregamento em lote (fetchall) ou query set-based em vez de FETCH linha a linha.",
+      "Usar context manager de transação (psycopg connection.transaction())."
+    ],
+    "complexity_score": 11,
+    "sql_delegation_strategy": "hybrid_bulk_python"
+  },
+  "generation": {},
+  "validation": {
+    "valid": true,
+    "ast_parse_ok": true,
+    "lint_ok": true,
+    "issues": [],
+    "warnings": [],
+    "metrics": {
+      "ast_parse_rate": 1.0,
+      "line_count": 100
+    }
+  },
+  "status": null,
+  "error": null
+}

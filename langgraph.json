@@ -1,0 +1,10 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "modernization": "./src/hybrid_pipeline/graph/build.py:graph"
+  },
+  "env": ".env",
+  "http": {
+    "app": "./src/hybrid_pipeline/api/app.py:app"
+  }
+}

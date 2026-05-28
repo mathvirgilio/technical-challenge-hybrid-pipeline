@@ -1,0 +1,345 @@
+{
+  "parsing": {
+    "routine_kind": "FUNCTION",
+    "routine_name": "sp_relatorio_mensal_cliente",
+    "parameters": [
+      {
+        "direction": "IN",
+        "name": "p_cliente_id",
+        "type": "BIGINT"
+      },
+      {
+        "direction": "IN",
+        "name": "p_data_inicio",
+        "type": "DATE"
+      },
+      {
+        "direction": "IN",
+        "name": "p_data_fim",
+        "type": "DATE"
+      }
+    ],
+    "declare_variables": [],
+    "statements": [
+      {
+        "index": 0,
+        "raw": "RAISE EXCEPTION 'Periodo invalido: inicio % > fim %', p_data_inicio, p_data_fim;\n        RAISE EXCEPTION 'Periodo invalido: inicio % > fim %', p_data_inicio, p_data_fim;",
+        "kind": "RAISE"
+      },
+      {
+        "index": 1,
+        "raw": "END IF;\n    END IF;",
+        "kind": "OTHER"
+      },
+      {
+        "index": 2,
+        "raw": "v_saldo_atual := fn_saldo_cliente(p_cliente_id);\n    v_saldo_atual := fn_saldo_cliente(p_cliente_id);",
+        "kind": "OTHER"
+      },
+      {
+        "index": 3,
+        "raw": "RAISE NOTICE 'Saldo atual do cliente %: %', p_cliente_id, v_saldo_atual;\n    RAISE NOTICE 'Saldo atual do cliente %: %', p_cliente_id, v_saldo_atual;",
+        "kind": "RAISE"
+      },
+      {
+        "index": 4,
+        "raw": "RETURN QUERY\n    WITH RECURSIVE meses AS (\n        SELECT DATE_TRUNC('month', p_data_inicio)::DATE AS mes\n        UNION ALL\n        SELECT (mes + INTERVAL '1 month')::DATE\n        FROM meses\n        WHERE mes < DATE_TRUNC('month', p_data_fim)\n    ),\n    movimento AS (\n        SELECT\n            DATE_TRUNC('month', t.data_transacao)::DATE AS mes,\n            SUM(CASE WHEN t.conta_destino_id IN (\n                SELECT id FROM contas WHERE cliente_id = p_cliente_id\n            ) THEN t.valor ELSE 0 END) AS creditos,\n            SUM(CASE WHEN t.conta_origem_id IN (\n                SELECT id FROM contas WHERE cliente_id = p_cliente_id\n            ) THEN t.valor ELSE 0 END) AS debitos,\n            COUNT(*) AS qtd\n        FROM transacoes t\n        WHERE t.status = 'EFETIVADA'\n          AND t.data_transacao >= p_data_inicio\n          AND t.data_transacao < p_data_fim + INTERVAL '1 day'\n          AND (\n            t.conta_origem_id IN (SELECT id FROM contas WHERE cliente_id = p_cliente_id)\n            OR t.conta_destino_id IN (SELECT id FROM contas WHERE cliente_id = p_cliente_id)\n          )\n        GROUP BY 1\n    )\n    SELECT\n        m.mes AS mes_referencia,\n        COALESCE(mv.creditos, 0) AS total_creditos,\n        COALESCE(mv.debitos, 0) AS total_debitos,\n        v_saldo_atual + COALESCE(mv.creditos, 0) - COALESCE(mv.debitos, 0) AS saldo_consolidado,\n        COALESCE(mv.qtd, 0)::INT AS qtd_transacoes\n    FROM meses m\n    LEFT JOIN movimento mv ON mv.mes = m.mes\n    ORDER BY m.mes;\n    ORDER BY m.mes;",
+        "kind": "SELECT",
+        "parse_error": "Invalid expression / Unexpected token. Line 2, Col: 8.\n      RETURN QUERY\n    \u001b[4mWITH\u001b[0m RECURSIVE meses AS (\n        SELECT DATE_TRUNC('month', p_data_inicio)::DATE AS mes\n        UNION A"
+      },
+      {
+        "index": 5,
+        "raw": "EXCEPTION\n    WHEN OTHERS THEN\n        RAISE WARNING 'Falha ao gerar relatorio: %. Retornando linha de fallback.', SQLERRM;\n        RAISE WARNING 'Falha ao gerar relatorio: %. Retornando linha de fallback.', SQLERRM;",
+        "kind": "RAISE"
+      },
+      {
+        "index": 6,
+        "raw": "RETURN QUERY\n        SELECT\n            DATE_TRUNC('month', p_data_inicio)::DATE,\n            0::NUMERIC(18,2),\n            0::NUMERIC(18,2),\n            COALESCE(v_saldo_atual, 0),\n            0::INT;\n            0::INT;",
+        "kind": "RETURN"
+      }
+    ],
+    "token_sample": [
+      {
+        "type": "_TokenType",
+        "value": "CREATE OR REPLACE"
+      },
+      {
+        "type": "_TokenType",
+        "value": "FUNCTION"
+      },
+      {
+        "type": "_TokenType",
+        "value": "sp_relatorio_mensal_cliente"
+      },
+      {
+        "type": "_TokenType",
+        "value": "("
+      },
+      {
+        "type": "_TokenType",
+        "value": "p_cliente_id"
+      },
+      {
+        "type": "_TokenType",
+        "value": "BIGINT"
+      },
+      {
+        "type": "_TokenType",
+        "value": ","
+      },
+      {
+        "type": "_TokenType",
+        "value": "p_data_inicio"
+      },
+      {
+        "type": "_TokenType",
+        "value": "DATE"
+      },
+      {
+        "type": "_TokenType",
+        "value": ","
+      },
+      {
+        "type": "_TokenType",
+        "value": "p_data_fim"
+      },
+      {
+        "type": "_TokenType",
+        "value": "DATE"
+      },
+      {
+        "type": "_TokenType",
+        "value": ")"
+      },
+      {
+        "type": "_TokenType",
+        "value": "RETURNS"
+      },
+      {
+        "type": "_TokenType",
+        "value": "TABLE"
+      },
+      {
+        "type": "_TokenType",
+        "value": "("
+      },
+      {
+        "type": "_TokenType",
+        "value": "mes_referencia"
+      },
+      {
+        "type": "_TokenType",
+        "value": "DATE"
+      },
+      {
+        "type": "_TokenType",
+        "value": ","
+      },
+      {
+        "type": "_TokenType",
+        "value": "total_creditos"
+      },
+      {
+        "type": "_TokenType",
+        "value": "NUMERIC"
+      },
+      {
+        "type": "_TokenType",
+        "value": "("
+      },
+      {
+        "type": "_TokenType",
+        "value": "18"
+      },
+      {
+        "type": "_TokenType",
+        "value": ","
+      },
+      {
+        "type": "_TokenType",
+        "value": "2"
+      },
+      {
+        "type": "_TokenType",
+        "value": ")"
+      },
+      {
+        "type": "_TokenType",
+        "value": ","
+      },
+      {
+        "type": "_TokenType",
+        "value": "total_debitos"
+      },
+      {
+        "type": "_TokenType",
+        "value": "NUMERIC"
+      },
+      {
+        "type": "_TokenType",
+        "value": "("
+      },
+      {
+        "type": "_TokenType",
+        "value": "18"
+      },
+      {
+        "type": "_TokenType",
+        "value": ","
+      },
+      {
+        "type": "_TokenType",
+        "value": "2"
+      },
+      {
+        "type": "_TokenType",
+        "value": ")"
+      },
+      {
+        "type": "_TokenType",
+        "value": ","
+      },
+      {
+        "type": "_TokenType",
+        "value": "saldo_consolidado"
+      },
+      {
+        "type": "_TokenType",
+        "value": "NUMERIC"
+      },
+      {
+        "type": "_TokenType",
+        "value": "("
+      },
+      {
+        "type": "_TokenType",
+        "value": "18"
+      },
+      {
+        "type": "_TokenType",
+        "value": ","
+      },
+      {
+        "type": "_TokenType",
+        "value": "2"
+      },
+      {
+        "type": "_TokenType",
+        "value": ")"
+      },
+      {
+        "type": "_TokenType",
+        "value": ","
+      },
+      {
+        "type": "_TokenType",
+        "value": "qtd_transacoes"
+      },
+      {
+        "type": "_TokenType",
+        "value": "INT"
+      },
+      {
+        "type": "_TokenType",
+        "value": ")"
+      },
+      {
+        "type": "_TokenType",
+        "value": "LANGUAGE"
+      },
+      {
+        "type": "_TokenType",
+        "value": "plpgsql"
+      },
+      {
+        "type": "_TokenType",
+        "value": "AS"
+      },
+      {
+        "type": "_TokenType",
+        "value": "$$\nDECLARE\n    v_saldo_atual NUMERIC(18,2);\nBEGIN\n    IF p_data_inicio > p_data_fim THEN\n        RAISE EXCEPTION 'Periodo invalido: inicio % > fim %', p_data_inicio, p_data_fim;\n    END IF;\n    v_saldo_atual := fn_saldo_cliente(p_cliente_id);\n    RAISE NOTICE 'Saldo atual do cliente %: %', p_cliente_id, v_saldo_atual;\n    RETURN QUERY\n    WITH RECURSIVE meses AS (\n        SELECT DATE_TRUNC('month', p_data_inicio)::DATE AS mes\n        UNION ALL\n        SELECT (mes + INTERVAL '1 month')::DATE\n        FROM meses\n        WHERE mes < DATE_TRUNC('month', p_data_fim)\n    ),\n    movimento AS (\n        SELECT\n            DATE_TRUNC('month', t.data_transacao)::DATE AS mes,\n            SUM(CASE WHEN t.conta_destino_id IN (\n                SELECT id FROM contas WHERE cliente_id = p_cliente_id\n            ) THEN t.valor ELSE 0 END) AS creditos,\n            SUM(CASE WHEN t.conta_origem_id IN (\n                SELECT id FROM contas WHERE cliente_id = p_cliente_id\n            ) THEN t.valor ELSE 0 END) AS debitos,\n            COUNT(*) AS qtd\n        FROM transacoes t\n        WHERE t.status = 'EFETIVADA'\n          AND t.data_transacao >= p_data_inicio\n          AND t.data_transacao < p_data_fim + INTERVAL '1 day'\n          AND (\n            t.conta_origem_id IN (SELECT id FROM contas WHERE cliente_id = p_cliente_id)\n            OR t.conta_destino_id IN (SELECT id FROM contas WHERE cliente_id = p_cliente_id)\n          )\n        GROUP BY 1\n    )\n    SELECT\n        m.mes AS mes_referencia,\n        COALESCE(mv.creditos, 0) AS total_creditos,\n        COALESCE(mv.debitos, 0) AS total_debitos,\n        v_saldo_atual + COALESCE(mv.creditos, 0) - COALESCE(mv.debitos, 0) AS saldo_consolidado,\n        COALESCE(mv.qtd, 0)::INT AS qtd_transacoes\n    FROM meses m\n    LEFT JOIN movimento mv ON mv.mes = m.mes\n    ORDER BY m.mes;\nEXCEPTION\n    WHEN OTHERS THEN\n        RAISE WARNING 'Falha ao gerar relatorio: %. Retornando linha de fallback.', SQLERRM;\n        RETURN QUERY\n        SELECT\n            DATE_TRUNC('month', p_data_inicio)::DATE,\n            0::NUMERIC(18,2),\n            0::NUMERIC(18,2),\n            COALESCE(v_saldo_atual, 0),\n            0::INT;\nEND;\n$$"
+      },
+      {
+        "type": "_TokenType",
+        "value": ";"
+      }
+    ],
+    "dialect": "postgres",
+    "parser_libraries": [
+      "sqlglot",
+      "sqlparse"
+    ]
+  },
+  "analysis": {
+    "features": {
+      "has_cursor": false,
+      "has_transaction": true,
+      "has_exception": true,
+      "has_cte": true,
+      "has_recursive_cte": true,
+      "has_jsonb": false,
+      "has_raise": true,
+      "has_return_query": true,
+      "has_out_params": false,
+      "has_in_params": true,
+      "has_nested_call": true,
+      "has_loop": false,
+      "has_case": false,
+      "has_bulk_update": false,
+      "is_function": true,
+      "is_procedure": false
+    },
+    "risks": [
+      {
+        "tag": "raise",
+        "severity": "medium",
+        "message": "Mapear para exceções/logging Python."
+      },
+      {
+        "tag": "recursive_cte",
+        "severity": "high",
+        "message": "Manter SQL no SGBD ou reescrever iterativamente."
+      },
+      {
+        "tag": "return_query",
+        "severity": "high",
+        "message": "Retorno tabular — usar list[dict] ou pandas."
+      },
+      {
+        "tag": "exception_block",
+        "severity": "high",
+        "message": "Traduzir try/except com rollback."
+      },
+      {
+        "tag": "parameters",
+        "severity": "low",
+        "message": "Expor IN/OUT como assinatura + retorno estruturado."
+      },
+      {
+        "tag": "nested_function",
+        "severity": "medium",
+        "message": "Inlining ou import do módulo Python equivalente."
+      }
+    ],
+    "recommendations": [
+      "Manter CTE/RETURN QUERY como SQL parametrizado via psycopg/SQLAlchemy Core.",
+      "Usar context manager de transação (psycopg connection.transaction())."
+    ],
+    "complexity_score": 14,
+    "sql_delegation_strategy": "hybrid_sql_in_db"
+  },
+  "generation": {},
+  "validation": {
+    "valid": true,
+    "ast_parse_ok": true,
+    "lint_ok": true,
+    "issues": [],
+    "warnings": [],
+    "metrics": {
+      "ast_parse_rate": 1.0,
+      "line_count": 96
+    }
+  },
+  "status": null,
+  "error": null
+}
