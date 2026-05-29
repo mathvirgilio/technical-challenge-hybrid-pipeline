@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -16,19 +18,22 @@ from hybrid_pipeline.graph.build import graph
 from hybrid_pipeline.metrics.evaluation import evaluate_fixtures
 from hybrid_pipeline.persistence.db import get_connection, init_database
 
-app = FastAPI(
-    title="Hybrid SQL→Python Pipeline",
-    description="Modernização PL/pgSQL → Python 3.14 via LangGraph",
-    version="0.1.0",
-)
 
-
-@app.on_event("startup")
-def on_startup() -> None:
+@asynccontextmanager
+async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     try:
         init_database()
     except Exception:  # noqa: BLE001
         pass  # permite subir API antes do Postgres em dev
+    yield
+
+
+app = FastAPI(
+    title="Hybrid SQL→Python Pipeline",
+    description="Modernização PL/pgSQL → Python 3.14 via LangGraph",
+    version="0.1.0",
+    lifespan=lifespan,
+)
 
 
 @app.get("/health", response_model=HealthResponse)
