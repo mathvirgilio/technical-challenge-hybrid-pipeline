@@ -122,7 +122,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 ### 1. Clonar e entrar no projeto
 
 ```bash
-git clone <url-do-repositorio>
+git clone https://github.com/mathvirgilio/technical-challenge-hybrid-pipeline.git
 cd technical-challenge-hybrid-pipeline
 ```
 
@@ -812,6 +812,3 @@ Resumo de aderência ao PDF. Detalhes nos checklists abaixo.
 
 ---
 
-## Uso de IA neste projeto
-
-Foi permitido usar assistentes de IA (Cursor, Copilot etc.) durante o desenvolvimento. Toda decisão técnica está documentada neste README e no código para defesa na entrevista de revisão.
