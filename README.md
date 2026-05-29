@@ -34,7 +34,7 @@ Pipeline híbrido (**LLM + regras determinísticas**) para modernizar stored pro
 Se você só quer ver a pipeline rodando:
 
 ```bash
-git clone <url-do-repositorio>
+git clone https://github.com/mathvirgilio/technical-challenge-hybrid-pipeline.git
 cd technical-challenge-hybrid-pipeline
 
 # 1. Dependências Python (uv instala tudo automaticamente)
